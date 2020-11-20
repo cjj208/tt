@@ -1,8 +1,31 @@
-# alpine为musl libc核心，虽然小巧，但一部分功能受限，下面的numpy安装时需要UnixCCompiler编译才可通过
-#FROM python:3.8.0-alpine3.10
-FROM python:3.7
-RUN python -m pip install forexconnect
-RUN pip3 install -r requirements.txt
-RUN mkdir -p /workfolder
-COPY ./main.py /workfolder/
-CMD [ "python", "/workfolder/main.py" ]
+### misc ###
+
+FROM ubuntu:latest
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update
+RUN apt-get install -y wget git
+RUN apt-get -y install make cmake build-essential
+RUN apt-get -y install libboost-all-dev
+RUN apt-get -y install python-dev
+
+### forexconnect ###
+
+RUN mkdir -p /opt/forexconnect
+
+WORKDIR /opt/forexconnect
+
+RUN wget http://fxcodebase.com/bin/forexconnect/1.4.1/ForexConnectAPI-1.4.1-Linux-x86_64.tar.gz
+RUN tar -xzf ForexConnectAPI-1.4.1-Linux-x86_64.tar.gz
+
+ENV FOREXCONNECT_ROOT /opt/forexconnect/ForexConnectAPI-1.4.1-Linux-x86_64
+
+
+### python-forexconnect##
+
+RUN git clone https://github.com/neka-nat/python-forexconnect.git
+
+RUN cd python-forexconnect; mkdir build; cd build; cmake .. -DDEFAULT_FOREX_URL="http://www.fxcorporate.com/Hosts.jsp"; make install
+
+ENV LD_LIBRARY_PATH /opt/forexconnect/python-forexconnect/build/forexconnect/sample_tools/lib/:/opt/forexconnect/ForexConnectAPI-1.4.1-Linux-x86_64/lib
