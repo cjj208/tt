@@ -91,6 +91,7 @@ def main():
         macd_sig = df.iloc[-1]["macd_signal"]
         print("*"*20)
         print ("close:%s macd:%s macdsig:%s" % (realclose,macd,macd_sig))
+        print (datetime.now())
     else:
         print ("未获利K线数据！")
 if __name__ == "__main__":
