@@ -17,21 +17,7 @@ def SMA(df, base, target, period):
     df["%s%s" % (target,period)].fillna(np.nan, inplace=True)
     df["%s%s" % (target, period)] = df["%s%s" % (target,period)].round(2)
     return df
-def EMA(df, base, target, period):
-    #base=收盘价的列名  target = 生成的列名  period = 需要什么样的周期
-    df["%s%s" % (target,period)] = df[base].ewm(span=period,adjust=False).mean()
-    df["%s%s" % (target,period)].fillna(0, inplace=True)
-    df["%s%s" % (target, period)] = df["%s%s" % (target,period)].round(2)
-    return df
 
-def MACD(df,fast=55,slow=144,n=55):
-    #df['macd_diff'] = trend.MACD(df['close'], n_fast=fast, n_slow=slow, n_sign=n).macd_diff()
-    df['macd'] = trend.MACD(df['close'], n_fast=fast, n_slow=slow, n_sign=n).macd()
-    df['macd_signal'] = trend.MACD(df['close'], n_fast=fast, n_slow=slow, n_sign=n).macd_signal()
-    df['diff'] =np.abs(df['macd'] - df['macd_signal'])
-
-
-    return df
 
 def dingtalk(webhook,message:str):
     secret = 'SEC11b9...这里填写自己的加密设置密钥'  # 可选：创建机器人勾选“加签”选项时使用
@@ -62,12 +48,13 @@ def main():
             columns={'Date': "datetime", 'BidOpen': "open", "BidHigh": "high", "BidLow": "low", "BidClose": "close",
                      'Volume': "volume",}, inplace=True)
 
-        EMA(df, base='high', target="emahigh", period=34)
-        EMA(df, base='close', target="emaclose", period=34)
-        EMA(df, base='low', target="emalow", period=34)
-        EMA(df, base='high', target="emahgih", period=144)
-        EMA(df, base='close', target="emaclose", period=144)
-        EMA(df, base='low', target="emalow", period=144)
+
+        df['ema_f_h'] = trend.ema(df.high, periods=34)
+        df['ema_f_c'] = trend.ema(df.close, periods=34)
+        df['ema_f_l'] = trend.ema(df.low, periods=34)
+        df['ema_s_h'] = trend.ema(df.high, periods=144)
+        df['ema_s_c'] = trend.ema(df.close, periods=144)
+        df['ema_s_l'] = trend.ema(df.low, periods=144)
 
         #MACD(df, fast=55, slow=144, n=55)
         df["macd"] = ta.trend.MACD(df.close, 55, 144, 55).macd()
@@ -82,7 +69,7 @@ def main():
         df["macd_sig_shfit"] = df["macd_sig"].shift(1)
         # 34收盘价线与144日收盘价线的大波段决定多空
 
-        df['bigwave'] = np.where(df["emaclose34"] > df["emaclose144"], 1, 0)
+        df['bigwave'] = np.where(df["ema_f_c"] > df["ema_s_c"], 1, 0)
         df["bigwave_shfit"] = df["bigwave"].shift(1)
         if df.iloc[-1]["macd_sig"] != df.iloc[-1]["macd_sig_shfit"]:
             message = "%smacd交叉" % datetime.now()
