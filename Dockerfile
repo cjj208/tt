@@ -5,5 +5,4 @@ RUN python -m pip install forexconnect
 RUN pip3 install -r requirements.txt
 RUN mkdir -p /workfolder
 COPY ./main.py /workfolder/
-
 CMD [ "python", "/workfolder/main.py" ]

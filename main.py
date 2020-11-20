@@ -102,7 +102,7 @@ def main():
         realclose = df.iloc[-1]["close"]
         macd = df.iloc[-1]["macd"]
         macd_sig = df.iloc[-1]["macd_signal"]
-
+        print("*"*20)
         print ("close:%s macd:%s macdsig:%s" % (realclose,macd,macd_sig))
     else:
         print ("未获利K线数据！")
