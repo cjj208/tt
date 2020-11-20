@@ -9,6 +9,8 @@ from datetime import datetime
 import numpy as np
 from ta import trend
 from forexconnect import fxcorepy
+
+
 from dingtalkchatbot.chatbot import DingtalkChatbot
 
 def SMA(df, base, target, period):
@@ -82,9 +84,6 @@ def main():
             dingtalk(webhook=dinghook,message="监控:%s" % message)
             print(message)
 
-        #print(datetime.now())
-
-
         df = df.round(2)
         realclose = df.iloc[-1]["close"]
         macd = df.iloc[-1]["macd"]
@@ -97,7 +96,6 @@ def main():
 if __name__ == "__main__":
     instrument = "US30"
     USER = "D103403723"
-    # print ("请输入密码：")
     PASS = input("password:")
     URL = "http://www.fxcorporate.com/Hosts.jsp"
     ENV = "demo"  # or "real"
