@@ -114,5 +114,5 @@ if __name__ == "__main__":
     fx = ForexConnect()
     fx.login(user_id=USER, password=PASS, url=URL, connection=ENV, session_status_callback=status_callback)
     while True:
-        time.sleep(1)
-        main()
+        if datetime.now().second==59:
+            main()
