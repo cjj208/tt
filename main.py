@@ -60,6 +60,10 @@ def main():
         df["macd"] = ta.trend.MACD(df.close, 55, 144, 55).macd()
         df["macd_signal"] = ta.trend.MACD(df.close, 55, 144, 55).macd_signal()
         df['rsi'] = momentum.rsi(df.close, n=34, )
+        df['stoch'] = momentum.stoch(high=df["high"],low=df["low"],close=df["close"],n=144)
+        df['stoch_signal'] = momentum.stoch_signal(high=df["high"],low=df["low"],close=df["close"],n=144)
+        df["stoch_sig"] = np.where(df["stoch"] > df["stoch_signal"], 1, 0)
+        df["stoch_sig_shfit"] = df["stoch_sig"].shift(1)
         df['emarsi'] = trend.ema(df.rsi, periods=34)
         df['cci'] = trend.cci(df.high, df.low, df.close, n=55, )
         df['emacci'] = trend.ema(df.cci, periods=55)
@@ -81,7 +85,11 @@ def main():
             message = "%s:34与144交叉" % datetime.now()
             dingtalk(webhook=dinghook,message="监控:%s" % message)
             print(message)
+        if df.iloc[-1]["stoch_sig"] != df.iloc[-1]["stoch_sig_shfit"]:
 
+            message = "%s:stoch相交" % datetime.now()
+            dingtalk(webhook=dinghook,message="监控:%s" % message)
+            print(message)
         #print(datetime.now())
 
 
@@ -89,8 +97,10 @@ def main():
         realclose = df.iloc[-1]["close"]
         macd = df.iloc[-1]["macd"]
         macd_sig = df.iloc[-1]["macd_signal"]
+        stoch = df.iloc[-1]["stoch"]
+        stoch_signal = df.iloc[-1]["stoch_signal"]
         print("*"*20)
-        print ("close:%s macd:%s macdsig:%s" % (realclose,macd,macd_sig))
+        print ("close:%s macd:%s macdsig:%s stoch:%s stoch_signal:%s" % (realclose,macd,macd_sig,stoch,stoch_signal))
     else:
         print ("未获利K线数据！")
 if __name__ == "__main__":
