@@ -79,34 +79,37 @@ def main():
 
         df['bigwave'] = np.where(df["ema_f_c"] > df["ema_s_c"], 1, 0)
         df["bigwave_shfit"] = df["bigwave"].shift(1)
-        if df.iloc[-1]["macd_sig"] != df.iloc[-1]["macd_sig_shfit"]:
-            message = "%smacd交叉" % now
-            dingtalk(webhook=dinghook,message="监控:%s" % message)
 
+
+        df["macd_shfit"] = df["macd"].shift(1)
+
+        if df.iloc[-1]["macd_sig"] != df.iloc[-1]["macd_sig_shfit"]:
+            message = "%s:%s macd交叉" % (now,instrument)
+            dingtalk(webhook=dinghook,message="监控:%s" % message)
+            time.sleep(1)
 
         if df.iloc[-1]["bigwave"] != df.iloc[-1]["bigwave_shfit"]:
-
-            message = "%s:34与144交叉" % now
+            message = "%s:%s 34与144交叉" % (now,instrument)
             dingtalk(webhook=dinghook,message="监控:%s" % message)
-            print(message)
+            time.sleep(1)
 
-        #print(datetime.now())
+        if (df.iloc[-1]["macd"] >0) & (df.iloc[-1]["macd_shfit"] <0):
+            message = "%s:%s macd向上突破!" % (now,instrument)
+            dingtalk(webhook=dinghook,message="监控:%s" % message)
+            time.sleep(1)
+        if (df.iloc[-1]["macd"] <0) & (df.iloc[-1]["macd_shfit"] >0):
+            message = "%s:%s macd向上突破!" % (now,instrument)
+            dingtalk(webhook=dinghook,message="监控:%s" % message)
+            time.sleep(1)
+        #df = df.round(2)
 
 
-        df = df.round(2)
-        realclose = df.iloc[-1]["close"]
-        macd = df.iloc[-1]["macd"]
-        macd_sig = df.iloc[-1]["macd_signal"]
-
-        print("*"*20)
-        print(now)
-        print ("close:%s macd:%s macdsig:%s " % (realclose,macd,macd_sig,))
     else:
         print ("未获利K线数据！")
 if __name__ == "__main__":
     instrument = "US30"
     USER = "D103403723"
-    # print ("请输入密码：")
+
     PASS = input("password:")
     URL = "http://www.fxcorporate.com/Hosts.jsp"
     ENV = "demo"  # or "real"
