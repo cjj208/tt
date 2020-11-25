@@ -75,8 +75,8 @@ def main():
 
         df["macd_sig"] = np.where(df["macd"] > df["macd_signal"], 1, 0)
         df["macd_sig_shfit"] = df["macd_sig"].shift(1)
-        # 34收盘价线与144日收盘价线的大波段决定多空
 
+        # 34收盘价线与144日收盘价线的大波段决定多空
         df['bigwave'] = np.where(df["ema_f_c"] > df["ema_s_c"], 1, 0)
         df["bigwave_shfit"] = df["bigwave"].shift(1)
 
@@ -94,11 +94,13 @@ def main():
             time.sleep(1)
 
         if (df.iloc[-1]["macd"] >0) & (df.iloc[-1]["macd_shfit"] <0):
-            message = "%s:%s macd向上突破!" % (now,instrument)
+            #当macd柱子向上穿越到零轴
+            message = "%s:%s macd向上穿越零轴!" % (now,instrument)
             dingtalk(webhook=dinghook,message="监控:%s" % message)
             time.sleep(1)
         if (df.iloc[-1]["macd"] <0) & (df.iloc[-1]["macd_shfit"] >0):
-            message = "%s:%s macd向上突破!" % (now,instrument)
+            #当 macd柱子向下穿越到零轴
+            message = "%s:%s macd向下穿越零轴!" % (now,instrument)
             dingtalk(webhook=dinghook,message="监控:%s" % message)
             time.sleep(1)
         #df = df.round(2)
