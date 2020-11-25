@@ -3,3 +3,6 @@ panndas==0.23.4
 python-dateutil==2.7.3
 pytz==2018.5
 six==1.11.0das==0.23.4
+forexconnect==1.6.3
+DingtalkChatbot==1.5.1
+ta==0.5.9
