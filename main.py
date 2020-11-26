@@ -59,8 +59,8 @@ def main():
         df['ema_s_l'] = trend.ema(df.low, periods=144)
 
         #MACD(df, fast=55, slow=144, n=55)
-        df["macd"] = ta.trend.MACD(df.close, 55, 144, 55).macd()
-        df["macd_signal"] = ta.trend.MACD(df.close, 55, 144, 55).macd_signal()
+        df["macd"] = ta.trend.MACD(df.close, 34, 144, 34).macd()
+        df["macd_signal"] = ta.trend.MACD(df.close, 34, 144, 34).macd_signal()
         df['rsi'] = momentum.rsi(df.close, n=34, )
 
         # df['stoch'] = momentum.stoch(high=df["high"],low=df["low"],close=df["close"],n=144)

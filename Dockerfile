@@ -1,6 +1,6 @@
 FROM python:3.7.9
 USER root
-WORKDIR /usr/src/app
+WORKDIR /root/tt
 RUN \
 apt-get update\
 && pip install numpy==1.14.5\
@@ -11,5 +11,6 @@ apt-get update\
 && pip install forexconnect==1.6.3\
 && pip install DingtalkChatbot==1.5.1\
 && pip install ta==0.5.9
+COPY ./main.py /tt/
 ENTRYPOINT ["python"]
-CMD ["main.py"]
+CMD ["/tt/main.py"]
