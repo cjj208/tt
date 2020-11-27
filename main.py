@@ -59,16 +59,17 @@ def main():
         df['ema_s_l'] = trend.ema(df.low, periods=144)
 
         #MACD(df, fast=55, slow=144, n=55)
-        df["macd"] = ta.trend.MACD(df.close, 34, 144, 34).macd()
-        df["macd_signal"] = ta.trend.MACD(df.close, 34, 144, 34).macd_signal()
+        df["macd"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd()
+        df["macd_signal"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd_signal()
         df['rsi'] = momentum.rsi(df.close, n=34, )
+        df['emarsi'] = trend.ema(df.rsi, periods=34)
 
         # df['stoch'] = momentum.stoch(high=df["high"],low=df["low"],close=df["close"],n=144)
         # df['stoch_signal'] = momentum.stoch_signal(high=df["high"],low=df["low"],close=df["close"],n=144)
         # df["stoch_sig"] = np.where(df["stoch"] > df["stoch_signal"], 1, 0)
         # df["stoch_sig_shfit"] = df["stoch_sig"].shift(1)
 
-        df['emarsi'] = trend.ema(df.rsi, periods=34)
+
         df['cci'] = trend.cci(df.high, df.low, df.close, n=55, )
         df['emacci'] = trend.ema(df.cci, periods=55)
 
