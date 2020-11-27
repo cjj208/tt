@@ -14,3 +14,10 @@ apt-get update\
 COPY ./main.py /tt/
 ENTRYPOINT ["python"]
 CMD ["/tt/main.py"]
+
+#--守护式容器
+#sudo docker run -di --name=mm01 mm
+#进入目录 ：sudo docker exec -it mm01 /bin/bash
+#映射目录创建容器
+#docker run -di --name=fx -v /home/jimc/tt:/root/tt mm:latest
+#进入目录 ：sudo docker exec -it fx /bin/bash

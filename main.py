@@ -83,6 +83,7 @@ def main():
 
         df["macd_shfit"] = df["macd"].shift(1)
 
+
         if df.iloc[-1]["macd_sig"] != df.iloc[-1]["macd_sig_shfit"]:
             message = "%s:%s macd交叉" % (now,instrument)
             dingtalk(webhook=dinghook,message="监控:%s" % message)
