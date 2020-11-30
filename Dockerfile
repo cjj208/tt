@@ -10,7 +10,7 @@ apt-get update\
 && pip install six==1.11.0\
 && pip install forexconnect==1.6.3\
 && pip install DingtalkChatbot==1.5.1\
-&& pip install ta==0.5.9
+&& pip install ta==0.5.25
 COPY ./main.py /tt/
 ENTRYPOINT ["python"]
 CMD ["/tt/main.py"]

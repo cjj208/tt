@@ -42,14 +42,13 @@ def print_order_row(order_row, account_id):
 def main():
     now = ("当前时间：%s"%time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime(time.time())))
 
-    history = fx.get_history(instrument=instrument, timeframe="m1", quotes_count=200)
+    history = fx.get_history(instrument=symbol, timeframe="m1", quotes_count=200)
     if history.size != 0:
         df = pd.DataFrame(history)
         df = df[['Date', 'BidOpen', 'BidHigh', 'BidLow', 'BidClose', 'Volume',]]
         df.rename(
             columns={'Date': "datetime", 'BidOpen': "open", "BidHigh": "high", "BidLow": "low", "BidClose": "close",
                      'Volume': "volume",}, inplace=True)
-
 
         df['ema_f_h'] = trend.ema(df.high, periods=34)
         df['ema_f_c'] = trend.ema(df.close, periods=34)
@@ -58,60 +57,55 @@ def main():
         df['ema_s_c'] = trend.ema(df.close, periods=144)
         df['ema_s_l'] = trend.ema(df.low, periods=144)
 
-        #MACD(df, fast=55, slow=144, n=55)
-        df["macd"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd()
+        # MACD(df, fast=55, slow=144, n=55)
+        df["macd"] = trend.MACD(df.close, n_slow=144, n_fast=55, n_sign=55).macd()
         df["macd_signal"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd_signal()
+        df['macd_postion'] = np.where(df.macd > df.macd_signal, int(1), int(-1))  # 上穿1，下穿-1
+
         df['rsi'] = momentum.rsi(df.close, n=34, )
         df['emarsi'] = trend.ema(df.rsi, periods=34)
+        df['rsi_postion'] = np.where(df.rsi > df.emarsi, int(1), int(-1))  # 上穿1，下穿-1
 
         # df['stoch'] = momentum.stoch(high=df["high"],low=df["low"],close=df["close"],n=144)
         # df['stoch_signal'] = momentum.stoch_signal(high=df["high"],low=df["low"],close=df["close"],n=144)
         # df["stoch_sig"] = np.where(df["stoch"] > df["stoch_signal"], 1, 0)
         # df["stoch_sig_shfit"] = df["stoch_sig"].shift(1)
 
-
         df['cci'] = trend.cci(df.high, df.low, df.close, n=55, )
         df['emacci'] = trend.ema(df.cci, periods=55)
+        df['cci_postion'] = np.where(df.cci > df.emacci, int(1), int(-1))  # 上穿1，下穿-1
 
+        # 价格为于快线与慢线之上则为1，快慢线之下则为-1，其它为0
+        df["close_postion"] = np.where((df['close'] > df['ema_f_c']) & (df['close'] > df['ema_s_c']), int(1),
+                                       np.where((df['close'] < df['ema_f_c']) & (df['close'] < df['ema_s_c']), int(-1),
+                                                int(0)))
 
-        df["macd_sig"] = np.where(df["macd"] > df["macd_signal"], 1, 0)
-        df["macd_sig_shfit"] = df["macd_sig"].shift(1)
-
-        # 34收盘价线与144日收盘价线的大波段决定多空
-        df['bigwave'] = np.where(df["ema_f_c"] > df["ema_s_c"], 1, 0)
-        df["bigwave_shfit"] = df["bigwave"].shift(1)
-
-
-        df["macd_shfit"] = df["macd"].shift(1)
-
-
-        if df.iloc[-1]["macd_sig"] != df.iloc[-1]["macd_sig_shfit"]:
-            message = "%s:%s macd交叉" % (now,instrument)
-            dingtalk(webhook=dinghook,message="监控:%s" % message)
+        if df.iloc[-1]["macd_postion"] != df.iloc[-2]["macd_postion"]:
+            message = "%s:%s macd交叉" % (now, symbol)
+            dingtalk(webhook=dinghook, message="监控:%s" % message)
+            time.sleep(1)
+        if (df.iloc[-1]["macd"] > 0) & (df.iloc[-2]["macd"] < 0):
+            # 当macd柱子向上穿越到零轴
+            message = "%s:%s macd向上穿越零轴!" % (now, symbol)
+            dingtalk(webhook=dinghook, message="监控:%s" % message)
             time.sleep(1)
 
-        if df.iloc[-1]["bigwave"] != df.iloc[-1]["bigwave_shfit"]:
-            message = "%s:%s 34与144交叉" % (now,instrument)
-            dingtalk(webhook=dinghook,message="监控:%s" % message)
-            time.sleep(1)
+        if df.iloc[-1]["close_postion"] != df.iloc[-2]["close_postion"]:
+            if df.iloc[-1]["close_postion"] == 1:
+                message = "%s:%s 价格向上突破快慢线，做多" % (now, symbol)
+            if df.iloc[-1]["close_postion"] == 0:
+                message = "%s:%s 价格位于快慢线之间，平仓" % (now, symbol)
+            if df.iloc[-1]["close_postion"] == -1:
+                message = "%s:%s 价格位于跌破快慢线，做空" % (now, symbol)
 
-        if (df.iloc[-1]["macd"] >0) & (df.iloc[-1]["macd_shfit"] <0):
-            #当macd柱子向上穿越到零轴
-            message = "%s:%s macd向上穿越零轴!" % (now,instrument)
-            dingtalk(webhook=dinghook,message="监控:%s" % message)
+            dingtalk(webhook=dinghook, message="监控:%s" % message)
             time.sleep(1)
-        if (df.iloc[-1]["macd"] <0) & (df.iloc[-1]["macd_shfit"] >0):
-            #当 macd柱子向下穿越到零轴
-            message = "%s:%s macd向下穿越零轴!" % (now,instrument)
-            dingtalk(webhook=dinghook,message="监控:%s" % message)
-            time.sleep(1)
-        #df = df.round(2)
+        df = df.round(2)
+        print("%s 收盘快慢线:%s macd状态:%s RSI状态：%s cci状态：%s "%(now,df.iloc[-1]["close_postion"],df.iloc[-1]["macd_postion"],df.iloc[-1]["rsi_postion"],df.iloc[-1]["cci_postion"]))
+    #chart(main())
 
-
-    else:
-        print ("未获利K线数据！")
 if __name__ == "__main__":
-    instrument = "US30"
+    symbol = "US30"
     USER = "D103403723"
 
     PASS = input("password:")
