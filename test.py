@@ -17,6 +17,13 @@ df["macd_signal"]=ta.trend.MACD(df.close,55,144,55).macd_signal()
 # df["stoch_sig_shfit"] = df["stoch_sig"].shift(1)
 df = trend.ema_indicator(close=df.high, window=34)
 now = str(datetime.now())
+while True:
+    now = str(datetime.now())
+    time.sleep(3)
+    with open('log.txt', 'a') as f:
 
+        print("进来了")
+        f.write(now)
+        f.write("\n")
 
-print (now)
+    print (now)

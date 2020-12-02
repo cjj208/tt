@@ -26,6 +26,10 @@ def dingtalk(webhook,message:str):
     # xiaoding = DingtalkChatbot(webhook, secret=secret)  # 方式二：勾选“加签”选项时使用（v1.5以上新功能）
     ding = DingtalkChatbot(webhook, pc_slide=True)
     ding.send_text(msg='监控:%s' % message, is_at_all=False)
+    with open('log.txt', 'a') as f:
+        print("保存文件")
+        f.write(message)
+        f.write("\n")
 def status_callback(session: fxcorepy.O2GSession,
                     status: fxcorepy.AO2GSessionStatus.O2GSessionStatus):
     print("Trading session status: " + str(status))
@@ -40,7 +44,7 @@ def print_order_row(order_row, account_id):
             print(string)
 #dingtalk(webhook=configs.dinghook,message="监控:%s" % configs.instrument)
 def main():
-    now = ("当前时间：%s"%time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime(time.time())))
+    now = ("%s"%time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime(time.time())))
 
     history = fx.get_history(instrument=symbol, timeframe="m1", quotes_count=200)
     if history.size != 0:
@@ -82,7 +86,7 @@ def main():
 
 
         if df.iloc[-1]["macd_postion"] != df.iloc[-2]["macd_postion"]:
-            message = " macd交叉%s%s" % (now,symbol)
+            message = " macd交叉 %s%s" % (now,symbol)
             dingtalk(webhook=dinghook,message="%s" % message)
             time.sleep(1)
 
@@ -93,16 +97,16 @@ def main():
             time.sleep(1)
         if (df.iloc[-1]["macd"] <0) & (df.iloc[-2]["macd"] >0):
             #当macd柱子跌破零轴
-            message = "macd柱向下跌破零轴 %s:%s " % (now,symbol)
+            message = "macd柱向下跌破零轴 %s%s " % (now,symbol)
             dingtalk(webhook=dinghook,message=":%s" % message)
             time.sleep(1)
         if df.iloc[-1]["close_postion"] != df.iloc[-2]["close_postion"]:
             if df.iloc[-1]["close_postion"] == 1:
-                message = "价格向上突破快慢线，做多 %s %s " % (now,symbol)
+                message = "价格向上突破快慢线，做多 %s%s " % (now,symbol)
             if df.iloc[-1]["close_postion"] == 0:
-                message = "价格位于快慢线之间，平仓%s:%s " % (now, symbol)
+                message = "价格位于快慢线之间，平仓 %s%s " % (now, symbol)
             if df.iloc[-1]["close_postion"] == -1:
-                message = "价格位于跌破快慢线，做空%s:%s " % (now, symbol)
+                message = "价格位于跌破快慢线，做空 %s%s " % (now, symbol)
 
             dingtalk(webhook=dinghook,message="%s" % message)
             time.sleep(1)
