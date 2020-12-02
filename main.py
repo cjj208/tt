@@ -80,26 +80,34 @@ def main():
                                        np.where((df['close'] < df['ema_f_c']) & (df['close'] < df['ema_s_c']), int(-1),
                                                 int(0)))
 
+
         if df.iloc[-1]["macd_postion"] != df.iloc[-2]["macd_postion"]:
-            message = "%s:%s macd交叉" % (now, symbol)
-            dingtalk(webhook=dinghook, message="监控:%s" % message)
-            time.sleep(1)
-        if (df.iloc[-1]["macd"] > 0) & (df.iloc[-2]["macd"] < 0):
-            # 当macd柱子向上穿越到零轴
-            message = "%s:%s macd向上穿越零轴!" % (now, symbol)
-            dingtalk(webhook=dinghook, message="监控:%s" % message)
+            message = " macd交叉%s%s" % (now,symbol)
+            dingtalk(webhook=dinghook,message="%s" % message)
             time.sleep(1)
 
+        if (df.iloc[-1]["macd"] >0) & (df.iloc[-2]["macd"] <0):
+            #当macd柱子向上穿越到零轴
+            message = "macd柱向上突破零轴 %s%s " % (now,symbol)
+            dingtalk(webhook=dinghook,message="%s" % message)
+            time.sleep(1)
+        if (df.iloc[-1]["macd"] <0) & (df.iloc[-2]["macd"] >0):
+            #当macd柱子跌破零轴
+            message = "macd柱向下跌破零轴 %s:%s " % (now,symbol)
+            dingtalk(webhook=dinghook,message=":%s" % message)
+            time.sleep(1)
         if df.iloc[-1]["close_postion"] != df.iloc[-2]["close_postion"]:
             if df.iloc[-1]["close_postion"] == 1:
-                message = "%s:%s 价格向上突破快慢线，做多" % (now, symbol)
+                message = "价格向上突破快慢线，做多 %s %s " % (now,symbol)
             if df.iloc[-1]["close_postion"] == 0:
-                message = "%s:%s 价格位于快慢线之间，平仓" % (now, symbol)
+                message = "价格位于快慢线之间，平仓%s:%s " % (now, symbol)
             if df.iloc[-1]["close_postion"] == -1:
-                message = "%s:%s 价格位于跌破快慢线，做空" % (now, symbol)
+                message = "价格位于跌破快慢线，做空%s:%s " % (now, symbol)
 
-            dingtalk(webhook=dinghook, message="监控:%s" % message)
+            dingtalk(webhook=dinghook,message="%s" % message)
             time.sleep(1)
+
+
         df = df.round(2)
         print("%s 收盘快慢线:%s macd状态:%s RSI状态：%s cci状态：%s "%(now,df.iloc[-1]["close_postion"],df.iloc[-1]["macd_postion"],df.iloc[-1]["rsi_postion"],df.iloc[-1]["cci_postion"]))
     #chart(main())

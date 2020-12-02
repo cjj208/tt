@@ -19,4 +19,4 @@ df = trend.ema_indicator(close=df.high, window=34)
 now = str(datetime.now())
 
 
-print (df)
+print (now)
