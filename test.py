@@ -17,13 +17,21 @@ df["macd_signal"]=ta.trend.MACD(df.close,55,144,55).macd_signal()
 # df["stoch_sig_shfit"] = df["stoch_sig"].shift(1)
 df = trend.ema_indicator(close=df.high, window=34)
 now = str(datetime.now())
-while True:
-    now = str(datetime.now())
-    time.sleep(3)
-    with open('log.txt', 'a') as f:
 
-        print("进来了")
-        f.write(now)
-        f.write("\n")
+now = str(datetime.now())
+time.sleep(3)
+with open('log.txt', 'a') as f:
 
-    print (now)
+    print("进来了")
+    f.write(now)
+    f.write("\n")
+
+print (now)
+
+
+
+import pytz, datetime
+local = pytz.timezone ("America/Los_Angeles")
+naive = datetime.datetime.strptime ("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")
+local_dt = local.localize(naive, is_dst=None)
+utc_dt = local_dt.astimezone(pytz.utc)
