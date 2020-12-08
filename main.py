@@ -153,10 +153,10 @@ if __name__ == "__main__":
                         call.append(message)
                     if df.iloc[-1]["ema_across"] != df.iloc[-2]["ema_across"]:
                         if df.iloc[-1]["ema_across"] == 1:
-                            message = "短周期穿越长周期 %s%s " % (now, sym)
+                            message = "ma34 > ma144 %s%s " % (now, sym)
                             call.append(message)
                         if df.iloc[-1]["ema_across"] == -1:
-                            message = "长周期穿越短周期 %s%s " % (now, sym)
+                            message = "ma34 < ma144  %s%s " % (now, sym)
                             call.append(message)
 
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
                         df.iloc[-1]["close"],
                           )
                     print(p)
-                    chart(df)
+                chart(df)
 
             if len(call) >0:
                 dingtalk(webhook=dinghook, message="%s" % call)
