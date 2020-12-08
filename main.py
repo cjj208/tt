@@ -19,10 +19,10 @@ def dingtalk(webhook,message:str):
     # xiaoding = DingtalkChatbot(webhook, secret=secret)  # 方式二：勾选“加签”选项时使用（v1.5以上新功能）
     ding = DingtalkChatbot(webhook, pc_slide=True)
     ding.send_text(msg='监控:%s' % message, is_at_all=False)
-    with open('log.txt', 'a') as f:
-        print("保存文件")
-        f.write(message)
-        f.write("\n")
+    # with open('log.txt', 'a') as f:
+    #     print("保存文件")
+    #     f.write(message)
+    #     f.write("\n")
 def status_callback(session: fxcorepy.O2GSession,
                     status: fxcorepy.AO2GSessionStatus.O2GSessionStatus):
     print("Trading session status: " + str(status))
@@ -63,7 +63,7 @@ def chart(df):
     pl = mpf.plot(df,type='candle',
              volume=False,
              ylabel='price',
-             savefig='%s' % (symbol) + '.jpg',
+             #savefig='%s' % (symbol) + '.jpg',
              addplot=ap0,panel_ratios=(1, 0.3, 0.3,0.3,0.3), num_panels=5, style='binance',
             )
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         if datetime.now().second==59:
             now = ("%s" % time.strftime('%Y.%m.%d %H:%M:%S', time.localtime(time.time())))
             for sym in symbolList:
-                print (sym)
+                # print (sym)
                 history = fx.get_history(instrument=sym,timeframe="m1", quotes_count=300)
                 #print (history)
                 if history.size != 0:
@@ -181,8 +181,8 @@ if __name__ == "__main__":
                         df.iloc[-1]["ema_across"],
                         df.iloc[-1]["close"],
                           )
-                    print(p)
-                chart(df)
+                    #print(p)
+                #chart(df)
 
             if len(call) >0:
                 dingtalk(webhook=dinghook, message="%s" % call)
