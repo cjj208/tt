@@ -18,7 +18,7 @@ def dingtalk(webhook,message:str):
     #xiaoding = DingtalkChatbot(webhook)  # 方式一：通常初始化方式
     # xiaoding = DingtalkChatbot(webhook, secret=secret)  # 方式二：勾选“加签”选项时使用（v1.5以上新功能）
     ding = DingtalkChatbot(webhook, pc_slide=True)
-    ding.send_text(msg='监控:%s' % message, is_at_all=False)
+    ding.send_text(msg='-%s' % message, is_at_all=False)
     # with open('log.txt', 'a') as f:
     #     print("保存文件")
     #     f.write(message)
@@ -89,9 +89,7 @@ if __name__ == "__main__":
         if datetime.now().second==59:
             now = ("%s" % time.strftime('%Y.%m.%d %H:%M:%S', time.localtime(time.time())))
             for sym in symbolList:
-                print(sym)
                 history = fx.get_history(instrument=sym,timeframe="m1", quotes_count=300)
-                print (history[-1][-2])
                 #print (history)
                 if history.size != 0:
                     df = pd.DataFrame(history)
@@ -137,23 +135,25 @@ if __name__ == "__main__":
                     # if df.iloc[-1]["macd_across"] != df.iloc[-2]["macd_across"]:
                     #     if df.iloc[-1]["macd_across"] ==1:
                     #
-                    #         message = " macd上穿 %s" % (sym)
+                    #         message = " macd信号上穿 %s" % (sym)
                     #         call.append(message)
-                    #         #dingtalk(webhook=dinghook, message="%s" % message)
-                    #         #time.sleep(1)
+                    #
                     #     if df.iloc[-1]["macd_across"] == -1:
-                    #         message = " macd下穿 %s" % (sym)
+                    #         message = " macd信号下穿 %s" % (sym)
                     #         call.append(message)
-                    if df.iloc[-1]["macd_across"] != df.iloc[-2]["macd_across"]:
-                        print ("macd!=macd[-2]",True,sym)
-                        if df.iloc[-1]["macd"] > 0:
-                            # 当macd柱子向上穿越到零轴
-                            message = "macd柱向上突破零轴 %s " % (sym)
-                            call.append(message)
-                        elif df.iloc[-1]["macd"] < 0:
-                            # 当macd柱子跌破零轴
-                            message = "macd柱向下跌破零轴 %s " % (sym)
-                            call.append(message)
+
+                    if (df.iloc[-1]["macd"] > 0) & (df.iloc[-2]["macd"] < 0) :
+                        # 当macd柱子向上穿越到零轴
+                        message = "macd上穿零轴 %s%s " % (sym, sig)
+                        sig = df.iloc[-1]['macd_across']
+
+                        call.append(message)
+                    if (df.iloc[-1]["macd"] < 0) & (df.iloc[-2]["macd"] > 0) :
+                        # 当macd柱子跌破零轴
+                        sig = df.iloc[-1]['macd_across']
+                        message = "macd下破零轴 %s%s " % (sym, sig)
+                        call.append(message)
+
                     if df.iloc[-1]["ema_across"] != df.iloc[-2]["ema_across"]:
                         if df.iloc[-1]["ema_across"] == 1:
                             message = "ma34 > ma144 %s " % (sym)
@@ -189,6 +189,7 @@ if __name__ == "__main__":
 
             if len(call) >0:
                 dingtalk(webhook=dinghook, message="%s" % call)
+
                 print ("提醒一次")
 
 
