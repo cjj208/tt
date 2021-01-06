@@ -86,111 +86,111 @@ if __name__ == "__main__":
 
     while True:
         call = []
-        if datetime.now().second==59:
-            now = ("%s" % time.strftime('%Y.%m.%d %H:%M:%S', time.localtime(time.time())))
-            for sym in symbolList:
-                history = fx.get_history(instrument=sym,timeframe="m1", quotes_count=300)
-                #print (history)
-                if history.size != 0:
-                    df = pd.DataFrame(history)
-                    df = df[['Date', 'BidOpen', 'BidHigh', 'BidLow', 'BidClose', 'Volume', ]]
-                    df.rename(
-                        columns={'Date': "datetime", 'BidOpen': "open", "BidHigh": "high", "BidLow": "low",
-                                 "BidClose": "close",
-                                 'Volume': "volume", }, inplace=True)
+        # if datetime.now().second==59:
+        now = ("%s" % time.strftime('%Y.%m.%d %H:%M:%S', time.localtime(time.time())))
+        for sym in symbolList:
+            history = fx.get_history(instrument=sym,timeframe="m1", quotes_count=300)
+            #print (history)
+            if history.size != 0:
+                df = pd.DataFrame(history)
+                df = df[['Date', 'BidOpen', 'BidHigh', 'BidLow', 'BidClose', 'Volume', ]]
+                df.rename(
+                    columns={'Date': "datetime", 'BidOpen': "open", "BidHigh": "high", "BidLow": "low",
+                             "BidClose": "close",
+                             'Volume': "volume", }, inplace=True)
 
-                    df['ema_f_h'] = trend.ema(df.high, periods=34)
-                    df['ema_f_c'] = trend.ema(df.close, periods=34)
-                    df['ema_f_l'] = trend.ema(df.low, periods=34)
-                    df['ema_s_h'] = trend.ema(df.high, periods=144)
-                    df['ema_s_c'] = trend.ema(df.close, periods=144)
-                    df['ema_s_l'] = trend.ema(df.low, periods=144)
-                    df['ema_across'] = np.where(df.ema_f_c > df.ema_s_c, int(1), int(-1))  # 上穿1，下穿-1
-                    # MACD(df, fast=55, slow=144, n=55)
-                    df["macd"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd()
-                    df["macd_signal"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd_signal()
-                    df['macd_across'] = np.where(df.macd > df.macd_signal, int(1), int(-1))  # 上穿1，下穿-1
+                df['ema_f_h'] = trend.ema(df.high, periods=34)
+                df['ema_f_c'] = trend.ema(df.close, periods=34)
+                df['ema_f_l'] = trend.ema(df.low, periods=34)
+                df['ema_s_h'] = trend.ema(df.high, periods=144)
+                df['ema_s_c'] = trend.ema(df.close, periods=144)
+                df['ema_s_l'] = trend.ema(df.low, periods=144)
+                df['ema_across'] = np.where(df.ema_f_c > df.ema_s_c, int(1), int(-1))  # 上穿1，下穿-1
+                # MACD(df, fast=55, slow=144, n=55)
+                df["macd"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd()
+                df["macd_signal"] = trend.MACD(df.close, n_slow=144, n_fast=34, n_sign=34).macd_signal()
+                df['macd_across'] = np.where(df.macd > df.macd_signal, int(1), int(-1))  # 上穿1，下穿-1
 
-                    df['rsi'] = momentum.rsi(df.close, n=34, )
-                    df['emarsi'] = trend.ema(df.rsi, periods=34)
-                    df['rsi_postion'] = np.where(df.rsi > df.emarsi, int(1), int(-1))  # 上穿1，下穿-1
+                df['rsi'] = momentum.rsi(df.close, n=34, )
+                df['emarsi'] = trend.ema(df.rsi, periods=34)
+                df['rsi_postion'] = np.where(df.rsi > df.emarsi, int(1), int(-1))  # 上穿1，下穿-1
 
-                    # df['stoch'] = momentum.stoch(high=df["high"],low=df["low"],close=df["close"],n=144)
-                    # df['stoch_signal'] = momentum.stoch_signal(high=df["high"],low=df["low"],close=df["close"],n=144)
-                    # df["stoch_sig"] = np.where(df["stoch"] > df["stoch_signal"], 1, 0)
-                    # df["stoch_sig_shfit"] = df["stoch_sig"].shift(1)
+                # df['stoch'] = momentum.stoch(high=df["high"],low=df["low"],close=df["close"],n=144)
+                # df['stoch_signal'] = momentum.stoch_signal(high=df["high"],low=df["low"],close=df["close"],n=144)
+                # df["stoch_sig"] = np.where(df["stoch"] > df["stoch_signal"], 1, 0)
+                # df["stoch_sig_shfit"] = df["stoch_sig"].shift(1)
 
-                    df['cci'] = trend.cci(df.high, df.low, df.close, n=55, )
-                    df['emacci'] = trend.ema(df.cci, periods=55)
-                    df['cci_postion'] = np.where(df.cci > df.emacci, int(1), int(-1))  # 上穿1，下穿-1
+                df['cci'] = trend.cci(df.high, df.low, df.close, n=55, )
+                df['emacci'] = trend.ema(df.cci, periods=55)
+                df['cci_postion'] = np.where(df.cci > df.emacci, int(1), int(-1))  # 上穿1，下穿-1
 
-                    # 价格为于快线与慢线之上则为1，快慢线之下则为-1，其它为0
-                    df["close_postion"] = np.where((df['close'] > df['ema_f_c']) & (df['close'] > df['ema_s_c']),
-                                                   int(1),
-                                                   np.where(
-                                                       (df['close'] < df['ema_f_c']) & (df['close'] < df['ema_s_c']),
-                                                       int(-1),
-                                                       int(0)))
+                # 价格为于快线与慢线之上则为1，快慢线之下则为-1，其它为0
+                df["close_postion"] = np.where((df['close'] > df['ema_f_c']) & (df['close'] > df['ema_s_c']),
+                                               int(1),
+                                               np.where(
+                                                   (df['close'] < df['ema_f_c']) & (df['close'] < df['ema_s_c']),
+                                                   int(-1),
+                                                   int(0)))
 
-                    # if df.iloc[-1]["macd_across"] != df.iloc[-2]["macd_across"]:
-                    #     if df.iloc[-1]["macd_across"] ==1:
-                    #
-                    #         message = " macd信号上穿 %s" % (sym)
-                    #         call.append(message)
-                    #
-                    #     if df.iloc[-1]["macd_across"] == -1:
-                    #         message = " macd信号下穿 %s" % (sym)
-                    #         call.append(message)
+                # if df.iloc[-1]["macd_across"] != df.iloc[-2]["macd_across"]:
+                #     if df.iloc[-1]["macd_across"] ==1:
+                #
+                #         message = " macd信号上穿 %s" % (sym)
+                #         call.append(message)
+                #
+                #     if df.iloc[-1]["macd_across"] == -1:
+                #         message = " macd信号下穿 %s" % (sym)
+                #         call.append(message)
 
-                    if (df.iloc[-1]["macd"] > 0) & (df.iloc[-2]["macd"] < 0) :
-                        # 当macd柱子向上穿越到零轴
-                        message = "macd上穿零轴 %s%s " % (sym, sig)
-                        sig = df.iloc[-1]['macd_across']
+                if (df.iloc[-1]["macd"] > 0) & (df.iloc[-2]["macd"] < 0) :
+                    # 当macd柱子向上穿越到零轴
+                    message = "macd上穿零轴 %s%s " % (sym, sig)
+                    sig = df.iloc[-1]['macd_across']
 
+                    call.append(message)
+                if (df.iloc[-1]["macd"] < 0) & (df.iloc[-2]["macd"] > 0) :
+                    # 当macd柱子跌破零轴
+                    sig = df.iloc[-1]['macd_across']
+                    message = "macd下破零轴 %s%s " % (sym, sig)
+                    call.append(message)
+
+                if df.iloc[-1]["ema_across"] != df.iloc[-2]["ema_across"]:
+                    if df.iloc[-1]["ema_across"] == 1:
+                        message = "ma34 > ma144 %s " % (sym)
                         call.append(message)
-                    if (df.iloc[-1]["macd"] < 0) & (df.iloc[-2]["macd"] > 0) :
-                        # 当macd柱子跌破零轴
-                        sig = df.iloc[-1]['macd_across']
-                        message = "macd下破零轴 %s%s " % (sym, sig)
+                    if df.iloc[-1]["ema_across"] == -1:
+                        message = "ma34 < ma144  %s " % (sym)
                         call.append(message)
 
-                    if df.iloc[-1]["ema_across"] != df.iloc[-2]["ema_across"]:
-                        if df.iloc[-1]["ema_across"] == 1:
-                            message = "ma34 > ma144 %s " % (sym)
-                            call.append(message)
-                        if df.iloc[-1]["ema_across"] == -1:
-                            message = "ma34 < ma144  %s " % (sym)
-                            call.append(message)
 
+                    # if df.iloc[-1]["close_postion"] != df.iloc[-2]["close_postion"]:
+                    #     if df.iloc[-1]["close_postion"] == 1:
+                    #         message = "价格向上突破快慢线，做多 %s%s " % (now,symbol)
+                    #     if df.iloc[-1]["close_postion"] == 0:
+                    #         message = "价格位于快慢线之间，平仓 %s%s " % (now, symbol)
+                    #     if df.iloc[-1]["close_postion"] == -1:
+                    #         message = "价格位于跌破快慢线，做空 %s%s " % (now, symbol)
 
-                        # if df.iloc[-1]["close_postion"] != df.iloc[-2]["close_postion"]:
-                        #     if df.iloc[-1]["close_postion"] == 1:
-                        #         message = "价格向上突破快慢线，做多 %s%s " % (now,symbol)
-                        #     if df.iloc[-1]["close_postion"] == 0:
-                        #         message = "价格位于快慢线之间，平仓 %s%s " % (now, symbol)
-                        #     if df.iloc[-1]["close_postion"] == -1:
-                        #         message = "价格位于跌破快慢线，做空 %s%s " % (now, symbol)
+                    # dingtalk(webhook=dinghook, message="%s" % message)
+                    # time.sleep(1)
+                df.dropna(axis=0, how='any', inplace=True)
+                df = df.round(2)
+                p = "%s 收盘快慢线:%s macd状态:%s RSI状态：%s cci状态：%s 34144均线：%s 收盘价：%s" % (
+                    now,
+                    df.iloc[-1]["close_postion"],
+                    df.iloc[-1]["macd_across"],
+                    df.iloc[-1]["rsi_postion"],
+                    df.iloc[-1]["cci_postion"],
+                    df.iloc[-1]["ema_across"],
+                    df.iloc[-1]["close"],
+                      )
+                print(p)
+            #chart(df)
 
-                        # dingtalk(webhook=dinghook, message="%s" % message)
-                        # time.sleep(1)
-                    df.dropna(axis=0, how='any', inplace=True)
-                    df = df.round(2)
-                    p = "%s 收盘快慢线:%s macd状态:%s RSI状态：%s cci状态：%s 34144均线：%s 收盘价：%s" % (
-                        now,
-                        df.iloc[-1]["close_postion"],
-                        df.iloc[-1]["macd_across"],
-                        df.iloc[-1]["rsi_postion"],
-                        df.iloc[-1]["cci_postion"],
-                        df.iloc[-1]["ema_across"],
-                        df.iloc[-1]["close"],
-                          )
-                    #print(p)
-                #chart(df)
+        if len(call) >0:
+            dingtalk(webhook=dinghook, message="%s" % call)
 
-            if len(call) >0:
-                dingtalk(webhook=dinghook, message="%s" % call)
-
-                print ("提醒一次")
+            print ("提醒一次")
 
 
 
